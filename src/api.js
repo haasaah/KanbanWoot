@@ -1,4 +1,14 @@
-const debugLog = console.log;
+const debugLog = window._env_?.REACT_APP_DEBUG === 'true' ? console.log : () => {};
+
+const CHATWOOT_URL = window._env_?.REACT_APP_CHATWOOT_URL || process.env.REACT_APP_CHATWOOT_URL || '';
+const ACCOUNT_ID = window._env_?.REACT_APP_CHATWOOT_ACCOUNT_ID || process.env.REACT_APP_CHATWOOT_ACCOUNT_ID || '1';
+const CHATWOOT_TOKEN = window._env_?.REACT_APP_CHATWOOT_TOKEN || process.env.REACT_APP_CHATWOOT_TOKEN || '';
+
+const chatwootHeaders = {
+  'Content-Type': 'application/json',
+  api_access_token: CHATWOOT_TOKEN,
+};
+
 async function chatwootFetch(endpoint, options = {}) {
   const url = `${CHATWOOT_URL}/api/v1/accounts/${ACCOUNT_ID}${endpoint}`;
   debugLog('chatwootFetch', url, options);
@@ -52,9 +62,7 @@ export async function getContacts() {
 export async function getCustomAttributes() {
   debugLog('api.js: getCustomAttributes chamado');
   try {
-    // Busca todos os atributos customizados
     const data = await chatwootFetch('/custom_attribute_definitions');
-    // Filtra apenas os de contato
     const all = data.payload || data || [];
     const filtered = Array.isArray(all)
       ? all.filter(attr => attr.attribute_model === 'contact_attribute')
@@ -71,7 +79,7 @@ export async function getCustomAttributeById(id) {
   debugLog('api.js: getCustomAttributeById chamado', id);
   try {
     const data = await chatwootFetch(`/custom_attribute_definitions/${id}`);
-    return data.payload || data; // pode vir como objeto direto
+    return data.payload || data;
   } catch (error) {
     debugLog('Erro ao buscar atributo customizado por ID:', error);
     throw error;
